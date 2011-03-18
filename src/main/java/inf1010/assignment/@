@@ -1,0 +1,249 @@
+package inf1010.assignment;
+
+import java.lang.UnsupportedOperationException;
+import java.lang.IllegalStateException;
+import java.util.NoSuchElementException;
+import java.util.Iterator;
+import inf1010.lib.two.IfiCollection;
+
+public class SinglyLinkedList<E extends Comparable<E>> implements
+		                        IfiCollection<E> {
+    
+    // internal list-element class
+    class Element {
+	public E data;
+	public Element next;
+        public Element prev;
+
+        Element(E e) {
+            this.data = e;
+        }
+    }
+    
+    public Element first, last;
+    public ListIterator it;
+    private int eCount = 0;
+
+/**
+* Adds a creature to the singly linked list (sorting in ascending order)
+* @param E  object of a creature (Human or EvilAlien)
+* @return       True if creature was successfully added to the list
+*               False if creature already exists in the list
+**/
+
+    public boolean add(E e) {
+        if(e == null) throw new NullPointerException();
+        if(this.contains(e)) return false;
+
+        Element elem = new Element(e);
+
+        if(first == null) {
+            this.first = elem;
+            this.last = elem;
+            eCount++;
+            return true;
+        } else {
+            int cmpt = 0;
+
+            for(Element curElem = this.first; curElem != null; 
+                                        curElem = curElem.next) {
+
+                cmpt = curElem.data.compareTo(elem.data);
+
+                if(cmpt > 0) {
+                    if(curElem == first) {                    
+                        elem.next = first;
+                        first.prev = elem;
+                        first = elem;
+                    } else {
+                        Element prevElem = curElem.prev;
+                        elem.next = curElem;
+                        elem.prev = prevElem;
+                        curElem.prev = elem;
+                        prevElem.next = elem;
+                    }
+                    eCount++;
+                    return true;
+                } else if(cmpt < 0 && curElem == last) {
+                    elem.prev = curElem;
+                    curElem.next = elem;
+                    last = elem;
+                    eCount++;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+/**
+* Checks if the given list contains the given creature
+* @param E      Creature to be checked
+* @return       True if given list contains given creature
+*               False if given list does not contain given creature
+**/
+
+    public boolean contains(E e) {
+    	if(e == null) throw new NullPointerException();
+
+        Element elem = new Element(e);
+
+        for(Element current = this.first; current != null; current = current.next) {
+            int cmpt = current.data.compareTo(elem.data);
+
+            if(cmpt == 0) return true;
+        }
+        return false;
+    }
+
+/**
+* Removes the given creature from the given list
+* @param E      Creature to be removed
+* @return       True if creature is successfully removed
+*               False if list doesn't contain the given creature
+**/
+    public boolean remove(E e) {
+        if(e == null) throw new NullPointerException();
+        if(!this.contains(e)) return false;
+
+        Element elem = new Element(e);
+        int cmpt = 0;
+
+        for(Element curElem = first; curElem != null;
+                                curElem = curElem.next) {
+        
+            cmpt = curElem.data.compareTo(elem.data);
+
+            if(cmpt == 0) {
+                if(curElem == first) {
+                    if(first.next == null) {
+                        first = null;
+                        last = null;
+                    } else {
+                        first = first.next;
+                        first.prev = null;
+                    }
+                } else {
+                    if(curElem.next != null) {
+                        Element front, back;
+                        front = curElem.next;
+                        back = curElem.prev;
+
+                        back.next = front;
+                        front.prev = back;
+                    } else {
+                        Element back = curElem.prev;
+                        back.next = null;
+                        last = back;
+                    }
+                }
+                eCount--;
+                return true;
+            }
+        }
+        return false;
+    } // remove()
+
+    public int size() {
+    	return eCount;
+    }
+
+    public boolean isEmpty() {
+        if(this.first == null && this.last == null) {
+            return true;
+        }
+        return false;
+    }
+
+    public void clear() {
+        this.first = null;
+        this.last = null;
+        eCount = 0;
+    }
+
+/**
+* Get a specific creature from the list
+* @param E      Creature to fetch
+* @return E     Returns the creature if found
+*               Return "null" if not found
+**/
+    public E get(E e) {
+        Element elem = new Element(e);
+
+        for(Element elemF = first; elemF != null; elemF = elemF.next) {
+            if(elemF.data.compareTo(elem.data) == 0) {
+                return elemF.data;
+            }
+        }
+        return null;
+    }
+
+/**
+* Fill an array of objects in the list (ascending order)
+* @param E[]    Array of the proper size
+* @return       Array of creatures if method was successful
+*               Null if list was empty
+**/
+
+    public E[] toArray(E[] a) {
+        if(a == null)
+            throw new NullPointerException();
+
+        if(a.length > this.size())
+            a[this.size()] = null;
+
+            int arCount = 0;
+
+            for(Element elem = first; elem != null; elem = elem.next) {
+                a[arCount] = elem.data;
+                arCount++;
+            }
+            return a;        
+    }
+    
+/**
+* Iterator that iterates over the given list
+* @return       Iterator<E>
+**/
+
+    public Iterator<E> iterator() {
+        return new ListIterator();
+    }
+
+    public class ListIterator implements Iterator<E> {
+        private Element curPos;
+        private boolean allowRemove = false;
+        
+        private ListIterator() {        
+            if(first != null)
+                this.curPos = SinglyLinkedList.this.first;
+        }
+
+        public boolean hasNext() {
+            return (curPos != null);
+        }
+
+        public E next() {
+            if(!hasNext()) 
+                throw new NoSuchElementException();
+            
+            E data = this.curPos.data;
+            this.curPos = this.curPos.next;
+            allowRemove = true;
+            return data;
+        }
+
+        public void remove() {
+            if(!allowRemove) {
+                throw new IllegalStateException();
+            } else {
+                if(curPos.data == null) throw new NullPointerException();
+                  else {
+                    SinglyLinkedList.this.remove(curPos.data);
+                    allowRemove = false;
+                }
+            }
+        }
+    } // ListIterator
+
+} // SinglyLinkedList

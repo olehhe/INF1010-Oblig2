@@ -1,0 +1,19 @@
+<suite name="Testreport">
+	<test name="BinarySearchTree">
+		<classes>
+			 <class name="inf1010.assignment.BinarySearchTreeTest"/>
+		</classes>
+	</test>
+
+	<test name="SinglyLinkedList">
+		<classes>
+			 <class name="inf1010.assignment.SinglyLinkedListTest"/>
+		</classes>
+	</test>
+
+	<test name="HumanTest">
+		<classes>
+			 <class name="inf1010.assignment.HumanTest"/>
+		</classes>
+	</test>
+</suite>
